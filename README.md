@@ -22,18 +22,23 @@ EAS 是 Expo 官方提供的云端构建服务，无需在本地安装 Android S
 
 步骤
 1. 安装 EAS CLI（如未安装）
+
 npm install -g eas-cli
 
-2. 登录 Expo 账号（免费注册：https://expo.dev）
+3. 登录 Expo 账号（免费注册：https://expo.dev）
+
 eas login
 
-3. 进入移动端项目目录
+4. 进入移动端项目目录
+
 cd mobile
 
-4. 初始化 EAS 配置（已存在 eas.json 可跳过）
+5. 初始化 EAS 配置（已存在 eas.json 可跳过）
+
 eas build:configure
 
-5. 构建 APK（preview 模式，直接产出 .apk 文件）
+6. 构建 APK（preview 模式，直接产出 .apk 文件）
+
 eas build --profile preview --platform android
 构建完成后，EAS 会提供一个下载链接，直接下载 APK 安装包。
 
