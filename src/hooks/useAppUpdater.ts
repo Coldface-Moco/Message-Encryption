@@ -8,6 +8,7 @@ export interface AppUpdaterState {
   status: UpdateStatus;
   progress: string;
   checkForUpdate: () => Promise<void>;
+  autoCheck: () => Promise<void>;
 }
 
 /**
@@ -83,5 +84,60 @@ export function useAppUpdater(): AppUpdaterState {
     }
   }, []);
 
-  return { status, progress, checkForUpdate };
+  // 静默自动检查：失败不弹窗，有更新才提示
+  const autoCheck = useCallback(async () => {
+    if (!Updates.isEnabled) return;
+
+    try {
+      setStatus('checking');
+      const result = await Updates.checkForUpdateAsync();
+
+      if (!result.isAvailable) {
+        setStatus('latest');
+        return;
+      }
+
+      Alert.alert(
+        '发现新版本',
+        '检测到新版本可用，是否立即下载并更新？',
+        [
+          { text: '稍后再说', style: 'cancel', onPress: () => { setStatus('idle'); } },
+          {
+            text: '立即更新',
+            onPress: async () => {
+              try {
+                setStatus('downloading');
+                setProgress('正在下载更新…');
+                await Updates.fetchUpdateAsync();
+                setStatus('ready');
+                setProgress('');
+                Alert.alert(
+                  '更新完成',
+                  '新版本已下载完成，重启应用后生效。',
+                  [
+                    { text: '稍后重启', style: 'cancel' },
+                    {
+                      text: '立即重启',
+                      onPress: async () => {
+                        await Updates.reloadAsync();
+                      },
+                    },
+                  ],
+                );
+              } catch {
+                setStatus('error');
+                setProgress('');
+                Alert.alert('下载失败', '更新下载失败，请检查网络后重试。');
+              }
+            },
+          },
+        ],
+      );
+    } catch {
+      // 静默失败，不弹错误提示
+      setStatus('idle');
+    }
+  }, []);
+
+  return { status, progress, checkForUpdate, autoCheck };
 }

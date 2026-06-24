@@ -29,15 +29,19 @@ import {
   Rocket,
   TrendingDown,
   RefreshCw,
+  Info,
 } from 'lucide-react-native';
 import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
+import * as Updates from 'expo-updates';
 
-const CHANGELOG_VERSION = 'v1.1.3';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}`;
+const CHANGELOG_VERSION = 'v1.1.2';
+const CHANGELOG_KEY = `changelog_seen_${Updates.updateId || CHANGELOG_VERSION}`;
 
 const CHANGELOG_ITEMS = [
+  '【测试】OTA 热更新流程验证',
   '新增 OTA 在线更新功能，支持热更新无需重新安装',
+  '本次升级后，重启应用会自动检查更新',
   '修复负数编码符号丢失导致解密失败的问题',
   '修复 parseInt 长串溢出导致解码精度丢失的问题',
   '升级密钥算法：密钥空间从 1000 种扩展至 keyLen × 2³²，大幅增强安全性',
@@ -59,13 +63,18 @@ export default function App() {
   const [customSeparator, setCustomSeparator] = useState('2');
   const [compressionRatio, setCompressionRatio] = useState<number | null>(null);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
-  const { status: updateStatus, progress: updateProgress, checkForUpdate } = useAppUpdater();
+  const { status: updateStatus, progress: updateProgress, checkForUpdate, autoCheck } = useAppUpdater();
 
   useEffect(() => {
     AsyncStorage.getItem(CHANGELOG_KEY).then((seen) => {
       if (!seen) setShowChangelog(true);
     });
+    const timer = setTimeout(() => {
+      autoCheck();
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   const dismissChangelog = useCallback(async () => {
@@ -172,6 +181,38 @@ export default function App() {
             ))}
             <TouchableOpacity style={styles.modalBtn} onPress={dismissChangelog}>
               <Text style={styles.modalBtnText}>我知道了</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 关于弹窗 */}
+      <Modal
+        visible={showAbout}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAbout(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalIconRow}>
+                <Info size={20} color="#3b82f6" />
+                <Text style={styles.modalTitle}>关于 {CHANGELOG_VERSION}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowAbout(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <X size={20} color="#9ca3af" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.modalSubtitle}>更新内容</Text>
+            {CHANGELOG_ITEMS.map((item, i) => (
+              <View key={i} style={styles.changelogItem}>
+                <View style={styles.changelogDot} />
+                <Text style={styles.changelogText}>{item}</Text>
+              </View>
+            ))}
+            <TouchableOpacity style={styles.modalBtn} onPress={() => setShowAbout(false)}>
+              <Text style={styles.modalBtnText}>关闭</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -441,7 +482,7 @@ export default function App() {
 
           {/* 页脚 */}
           <View style={styles.footerRow}>
-            <Text style={styles.footer}>@2026 Build V1.1.3 版权所有</Text>
+            <Text style={styles.footer}>@2026 Build V1.1.2 版权所有</Text>
             <TouchableOpacity
               style={styles.updateBtn}
               onPress={checkForUpdate}
@@ -459,6 +500,13 @@ export default function App() {
                   ? updateProgress || '下载中…'
                   : '检查更新'}
               </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.updateBtn}
+              onPress={() => setShowAbout(true)}
+            >
+              <Info size={12} color="#6b7280" />
+              <Text style={styles.updateBtnText}>关于</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
