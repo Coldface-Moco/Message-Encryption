@@ -33,10 +33,11 @@ import {
 import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
 
-const CHANGELOG_VERSION = 'v1.1.2';
+const CHANGELOG_VERSION = 'v1.1.3';
 const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}`;
 
 const CHANGELOG_ITEMS = [
+  '新增 OTA 在线更新功能，支持热更新无需重新安装',
   '修复负数编码符号丢失导致解密失败的问题',
   '修复 parseInt 长串溢出导致解码精度丢失的问题',
   '升级密钥算法：密钥空间从 1000 种扩展至 keyLen × 2³²，大幅增强安全性',
@@ -440,7 +441,7 @@ export default function App() {
 
           {/* 页脚 */}
           <View style={styles.footerRow}>
-            <Text style={styles.footer}>@2026 Build V1.1.2 版权所有</Text>
+            <Text style={styles.footer}>@2026 Build V1.1.3 版权所有</Text>
             <TouchableOpacity
               style={styles.updateBtn}
               onPress={checkForUpdate}
@@ -816,10 +817,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   footerRow: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    gap: 8,
     marginTop: 8,
     marginBottom: 16,
   },
