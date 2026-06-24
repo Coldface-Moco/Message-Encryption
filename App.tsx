@@ -13,6 +13,7 @@ import {
   Platform,
   Modal,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Clipboard from 'expo-clipboard';
@@ -39,7 +40,6 @@ const CHANGELOG_VERSION = 'v1.1.2';
 const CHANGELOG_KEY = `changelog_seen_${Updates.updateId || CHANGELOG_VERSION}`;
 
 const CHANGELOG_ITEMS = [
-  '【测试】OTA 热更新流程验证',
   '新增 OTA 在线更新功能，支持热更新无需重新安装',
   '本次升级后，重启应用会自动检查更新',
   '修复负数编码符号丢失导致解密失败的问题',
@@ -194,7 +194,7 @@ export default function App() {
         onRequestClose={() => setShowAbout(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+          <View style={[styles.modalCard, { maxHeight: '80%' }]}>
             <View style={styles.modalHeader}>
               <View style={styles.modalIconRow}>
                 <Info size={20} color="#3b82f6" />
@@ -204,13 +204,24 @@ export default function App() {
                 <X size={20} color="#9ca3af" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.modalSubtitle}>更新内容</Text>
-            {CHANGELOG_ITEMS.map((item, i) => (
-              <View key={i} style={styles.changelogItem}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 8 }}>
+              <Text style={styles.modalSubtitle}>更新内容</Text>
+              {CHANGELOG_ITEMS.map((item, i) => (
+                <View key={i} style={styles.changelogItem}>
+                  <View style={styles.changelogDot} />
+                  <Text style={styles.changelogText}>{item}</Text>
+                </View>
+              ))}
+              <View style={[styles.changelogItem, { marginTop: 12 }]}>
                 <View style={styles.changelogDot} />
-                <Text style={styles.changelogText}>{item}</Text>
+                <Text style={styles.changelogText}>关于本项目：</Text>
               </View>
-            ))}
+              <TouchableOpacity onPress={() => Linking.openURL('https://github.com/Coldface-Moco/Message-Encryption')}>
+                <Text style={[styles.changelogText, { color: '#3b82f6', textDecorationLine: 'underline', marginLeft: 20 }]}>
+                  https://github.com/Coldface-Moco/Message-Encryption
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
             <TouchableOpacity style={styles.modalBtn} onPress={() => setShowAbout(false)}>
               <Text style={styles.modalBtnText}>关闭</Text>
             </TouchableOpacity>
