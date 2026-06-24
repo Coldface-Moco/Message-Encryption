@@ -40,5 +40,6 @@ eas build:configure
 6. 构建 APK（preview 模式，直接产出 .apk 文件）
 
 eas build --profile preview --platform android
+
 构建完成后，EAS 会提供一个下载链接，直接下载 APK 安装包。
 
