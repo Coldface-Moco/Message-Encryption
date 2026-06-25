@@ -2,6 +2,7 @@
 
 const RLE_MARKER = 131072;
 const LZW_BASE = 262144;
+const LZW_MAX_DICT = 524288; // 字典上限，防止极端输入导致内存溢出
 
 /** Zigzag 编码：将任意整数（含负数）双射到非负整数 */
 function zigzag(n: number): number { return n >= 0 ? n * 2 : -n * 2 - 1; }
@@ -58,7 +59,7 @@ function rleDecode(arr: number[]): number[] {
   return out;
 }
 
-/** LZW 压缩：整数数组 → 整数数组 */
+/** LZW 压缩：整数数组 → 整数数组（字典大小上限防止内存溢出） */
 function lzwCompressInts(arr: number[]): number[] {
   const dict = new Map<string, number>();
   let dictSize = LZW_BASE;
@@ -67,7 +68,11 @@ function lzwCompressInts(arr: number[]): number[] {
   for (const v of arr) {
     const wv = [...w, v]; const key = wv.join(',');
     if (w.length === 0 || dict.has(key)) { w = wv; }
-    else { result.push(w.length === 1 ? w[0] : dict.get(w.join(','))!); dict.set(key, dictSize++); w = [v]; }
+    else {
+      result.push(w.length === 1 ? w[0] : dict.get(w.join(','))!);
+      if (dictSize < LZW_MAX_DICT) dict.set(key, dictSize++);
+      w = [v];
+    }
   }
   if (w.length > 0) result.push(w.length === 1 ? w[0] : dict.get(w.join(','))!);
   return result;
@@ -139,9 +144,9 @@ export function encrypt(
 
   // 第四步：差分 XOR + 按位置密钥流偏移（加密）
   const keyOffsets = useKey && key ? getKeyOffsets(key, lzwed.length) : null;
-  const adjusted = lzwed.map((v, i) => keyOffsets ? v + keyOffsets[i] : v);
+  const adjusted = lzwed.map((v, i) => keyOffsets ? ((v + keyOffsets[i]) >>> 0) : v);
   const xored: number[] = [adjusted[0]];
-  for (let i = 1; i < adjusted.length; i++) xored.push(adjusted[i] ^ adjusted[i - 1]);
+  for (let i = 1; i < adjusted.length; i++) xored.push((adjusted[i] ^ adjusted[i - 1]) >>> 0);
 
   // 第五步：编码为自定义字符
   const result = codesToStr(xored, customChars, customSeparator);
@@ -172,9 +177,9 @@ export function decrypt(
   const xored = strToCodes(text, customChars, customSeparator);
   if (!xored.length) return '';
 
-  // 第二步：逆差分 XOR
-  const adjusted: number[] = [xored[0]];
-  for (let i = 1; i < xored.length; i++) adjusted.push(xored[i] ^ adjusted[i - 1]);
+  // 第二步：逆差分 XOR（>>> 0 确保有符号Int32回转为无符号32位）
+  const adjusted: number[] = [(xored[0]) >>> 0];
+  for (let i = 1; i < xored.length; i++) adjusted.push((xored[i] ^ adjusted[i - 1]) >>> 0);
 
   // 第三步：去除按位置密钥流偏移
   const keyOffsets = useKey && key ? getKeyOffsets(key, adjusted.length) : null;
@@ -185,6 +190,6 @@ export function decrypt(
 
   // 第五步：RLE 解压 → 原始 charCode → 转回字符
   const plainCodes = rleDecode(rled);
-  return plainCodes.map(c => c > 0 ? String.fromCharCode(c) : '').join('');
+  return plainCodes.map(c => String.fromCharCode(c)).join('');
 }
 

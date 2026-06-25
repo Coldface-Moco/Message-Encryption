@@ -142,13 +142,13 @@ export default function App() {
     const ch = value.slice(0, 1);
     if (!ch) return;
     setCustomChars((prev) => {
-      // 若其他位置已有该字符，则忽略本次更新，保证 base 编码双射性
-      if (prev.some((c, i) => i !== index && c === ch)) return prev;
+      // 若其他位置已有该字符或与分隔符冲突，则忽略本次更新
+      if (prev.some((c, i) => i !== index && c === ch) || ch === customSeparator) return prev;
       const newChars = [...prev];
       newChars[index] = ch;
       return newChars;
     });
-  }, []);
+  }, [customSeparator]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -292,7 +292,13 @@ export default function App() {
                 <TextInput
                   style={styles.separatorInput}
                   value={customSeparator}
-                  onChangeText={setCustomSeparator}
+                  onChangeText={(v) => {
+                    const ch = v.slice(0, 1);
+                    if (!ch) return;
+                    // 分隔符不能与自定义字符重复
+                    if (customChars.includes(ch)) return;
+                    setCustomSeparator(ch);
+                  }}
                   maxLength={1}
                   textAlign="center"
                 />
