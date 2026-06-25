@@ -36,8 +36,8 @@ import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
-const CHANGELOG_VERSION = 'v1.1.3';
-const CHANGELOG_KEY = `changelog_seen_${Updates.updateId || CHANGELOG_VERSION}`;
+const CHANGELOG_VERSION = 'v1.1.2';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
 
 const CHANGELOG_ITEMS = [
   '修复使用密钥加密/解密完全失败的问题（XOR有符号/无符号转换错误）',
@@ -497,7 +497,7 @@ export default function App() {
 
           {/* 页脚 */}
           <View style={styles.footerRow}>
-            <Text style={styles.footer}>@2026 Build V1.1.3 版权所有</Text>
+            <Text style={styles.footer}>@2026 Build V1.1.2 版权所有</Text>
             <TouchableOpacity
               style={styles.updateBtn}
               onPress={checkForUpdate}
