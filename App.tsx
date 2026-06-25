@@ -36,18 +36,14 @@ import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
-const CHANGELOG_VERSION = 'v1.1.2';
+const CHANGELOG_VERSION = 'v1.1.3';
 const CHANGELOG_KEY = `changelog_seen_${Updates.updateId || CHANGELOG_VERSION}`;
 
 const CHANGELOG_ITEMS = [
-  '新增 OTA 在线更新功能，支持热更新无需重新安装',
-  '本次升级后，重启应用会自动检查更新',
-  '修复负数编码符号丢失导致解密失败的问题',
-  '修复 parseInt 长串溢出导致解码精度丢失的问题',
-  '升级密钥算法：密钥空间从 1000 种扩展至 keyLen × 2³²，大幅增强安全性',
-  '修复自定义字符允许重复导致加解密错误的问题',
-  '加密/解密新增异常捕获，非法输入不再导致崩溃',
-  '隐藏密钥长度显示，改为已设置/未输入状态提示',
+  '修复使用密钥加密/解密完全失败的问题（XOR有符号/无符号转换错误）',
+  '修复 null 字符（charCode=0）在解密后丢失的问题',
+  '新增分隔符与自定义字符冲突校验，防止设置错误导致解密失败',
+  '优化 LZW 字典大小限制，防止极端输入导致内存溢出',
 ];
 
 export default function App() {
@@ -173,12 +169,14 @@ export default function App() {
               </TouchableOpacity>
             </View>
             <Text style={styles.modalSubtitle}>本次更新内容</Text>
-            {CHANGELOG_ITEMS.map((item, i) => (
-              <View key={i} style={styles.changelogItem}>
-                <View style={styles.changelogDot} />
-                <Text style={styles.changelogText}>{item}</Text>
-              </View>
-            ))}
+            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={true}>
+              {CHANGELOG_ITEMS.map((item, i) => (
+                <View key={i} style={styles.changelogItem}>
+                  <View style={styles.changelogDot} />
+                  <Text style={styles.changelogText}>{item}</Text>
+                </View>
+              ))}
+            </ScrollView>
             <TouchableOpacity style={styles.modalBtn} onPress={dismissChangelog}>
               <Text style={styles.modalBtnText}>我知道了</Text>
             </TouchableOpacity>
@@ -499,7 +497,7 @@ export default function App() {
 
           {/* 页脚 */}
           <View style={styles.footerRow}>
-            <Text style={styles.footer}>@2026 Build V1.1.2 版权所有</Text>
+            <Text style={styles.footer}>@2026 Build V1.1.3 版权所有</Text>
             <TouchableOpacity
               style={styles.updateBtn}
               onPress={checkForUpdate}
