@@ -1,33 +1,43 @@
 {
-  "name": "mobile",
-  "version": "1.1.2",
-  "main": "index.ts",
+  "name": "dashen-mimu",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "expo start",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web",
-    "build:android": "eas build --platform android",
-    "build:ios": "eas build --platform ios",
-    "build:preview": "eas build --profile preview --platform android"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext js,jsx,ts,tsx --quiet"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^3.1.1",
-    "expo": "~55.0.8",
-    "expo-clipboard": "^55.0.13",
-    "expo-status-bar": "~55.0.4",
-    "expo-updates": "^55.0.24",
-    "lucide-react-native": "^1.14.0",
-    "react": "19.2.0",
-    "react-native": "0.83.2",
-    "react-native-svg": "^15.15.5"
+    "@eslint/js": "^9.32.0",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "clsx": "^2.0.0",
+    "eslint": "^9.32.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "lucide-react": "^0.576.0",
+    "miaoda-react-devkit": "0.1.1-beta.14",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
-    "@types/react": "~19.2.2",
-    "typescript": "~5.9.2"
-  },
-  "private": true,
-  "allowScripts": {
-    "fsevents@2.3.3": true
+    "@biomejs/biome": "2.4.5",
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.18",
+    "miaoda-sc-plugin": "1.0.62",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.2.2",
+    "vite": "^7.0.0",
+    "vite-plugin-svgr": "^4.5.0"
   }
 }
