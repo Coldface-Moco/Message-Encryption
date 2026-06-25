@@ -142,11 +142,12 @@ export function encrypt(
   // 第三步：LZW 压缩
   const lzwed = lzwCompressInts(rled);
 
-  // 第四步：差分 XOR + 按位置密钥流偏移（加密）
+  // 第四步：XOR 密钥流（加密）+ 差分 XOR
+  // 使用 XOR 应用密钥而非加法，天然在 32-bit 内封闭，无溢出问题
   const keyOffsets = useKey && key ? getKeyOffsets(key, lzwed.length) : null;
-  const adjusted = lzwed.map((v, i) => keyOffsets ? ((v + keyOffsets[i]) >>> 0) : v);
+  const adjusted = lzwed.map((v, i) => keyOffsets ? v ^ keyOffsets[i] : v);
   const xored: number[] = [adjusted[0]];
-  for (let i = 1; i < adjusted.length; i++) xored.push((adjusted[i] ^ adjusted[i - 1]) >>> 0);
+  for (let i = 1; i < adjusted.length; i++) xored.push(adjusted[i] ^ adjusted[i - 1]);
 
   // 第五步：编码为自定义字符
   const result = codesToStr(xored, customChars, customSeparator);
@@ -177,13 +178,13 @@ export function decrypt(
   const xored = strToCodes(text, customChars, customSeparator);
   if (!xored.length) return '';
 
-  // 第二步：逆差分 XOR（>>> 0 确保有符号Int32回转为无符号32位）
-  const adjusted: number[] = [(xored[0]) >>> 0];
-  for (let i = 1; i < xored.length; i++) adjusted.push((xored[i] ^ adjusted[i - 1]) >>> 0);
+  // 第二步：逆差分 XOR
+  const adjusted: number[] = [xored[0]];
+  for (let i = 1; i < xored.length; i++) adjusted.push(xored[i] ^ adjusted[i - 1]);
 
-  // 第三步：去除按位置密钥流偏移
+  // 第三步：XOR 密钥流（解密，自反运算）
   const keyOffsets = useKey && key ? getKeyOffsets(key, adjusted.length) : null;
-  const lzwed = adjusted.map((v, i) => keyOffsets ? v - keyOffsets[i] : v);
+  const lzwed = adjusted.map((v, i) => keyOffsets ? v ^ keyOffsets[i] : v);
 
   // 第四步：LZW 解压
   const rled = lzwDecompressInts(lzwed);

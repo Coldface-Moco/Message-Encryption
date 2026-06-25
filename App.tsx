@@ -40,7 +40,8 @@ const CHANGELOG_VERSION = 'v1.1.2';
 const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
 
 const CHANGELOG_ITEMS = [
-  '修复使用密钥加密/解密完全失败的问题（XOR有符号/无符号转换错误）',
+  '修复使用密钥加密/解密完全失败的问题',
+  '密钥应用方式改为 XOR 运算，天然 32-bit 封闭无溢出',
   '修复 null 字符（charCode=0）在解密后丢失的问题',
   '新增分隔符与自定义字符冲突校验，防止设置错误导致解密失败',
   '优化 LZW 字典大小限制，防止极端输入导致内存溢出',
