@@ -91,7 +91,7 @@ function lzwDecompressInts(codes: number[]): number[] {
     else if (dict.has(k)) entry = dict.get(k)!;
     else if (k === dictSize) entry = [...w, w[0]];
     else return result;
-    result.push(...entry); dict.set(dictSize++, [...w, entry[0]]); w = entry;
+    result.push(...entry); if (dictSize < LZW_MAX_DICT) dict.set(dictSize++, [...w, entry[0]]); w = entry;
   }
   return result;
 }
