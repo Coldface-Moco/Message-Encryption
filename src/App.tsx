@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 
 const RLE_MARKER = 131072;
 
-const CHANGELOG_VERSION = 'v1.1.5';
+const CHANGELOG_VERSION = 'v1.1.2';
 const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}`;
 
 const CHANGELOG_ITEMS = [
@@ -558,7 +558,7 @@ function App() {
 
         {/* 页脚 */}
         <div className="text-center py-6">
-          <p className="text-sm text-gray-500">{"@2026 Build V1.1.5 版权所有"}</p>
+          <p className="text-sm text-gray-500">{"@2026 Build V1.1.2 版权所有"}</p>
         </div>
       </div>
     </div>
