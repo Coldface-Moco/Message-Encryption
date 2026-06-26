@@ -5,17 +5,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
+// RLE 标记：高于最大 XOR 值（charCode+keyOffset+i 最大约 131000），使用 131072
 const RLE_MARKER = 131072;
+// LZW 字典码起点：高于 RLE_MARKER
+const LZW_BASE = 262144;
+const LZW_DICT_MAX = 524288; // 字典最多 262144 个条目，防止极端输入撑爆内存
 
 const CHANGELOG_VERSION = 'v1.1.2';
 const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}`;
 
 const CHANGELOG_ITEMS = [
-  '编码方案升级为 BigInt 打包，移除 LZW 压缩，输出缩短 20-60%',
-  '修复密钥加密解密失败：XOR 运算后加 >>> 0 转回无符号 32-bit',
-  '修复 null 字符（charCode=0）丢失问题',
-  '修复分隔符与自定义字符冲突导致解密失败',
-  '升级密钥算法：密钥空间 ≈ keyLen × 2³²',
+  '修复 null 字符（charCode=0）丢失问题：c > 0 改为 c >= 0',
+  '修复分隔符与自定义字符冲突导致解密失败：输入时自动拒绝冲突字符',
+  '修复 LZW 字典无上限内存风险：增加 262144 条目上限',
+  '修复密钥加密/解密失败：密钥偏移由加法改为 XOR，解决 32-bit 溢出问题',
+  '修复负数编码符号丢失导致解密失败的问题',
+  '修复 parseInt 长串溢出导致解码精度丢失的问题',
+  '升级密钥算法：密钥空间从 1000 种扩展至 keyLen × 2³²，大幅增强安全性',
 ];
 
 function App() {
@@ -42,66 +48,33 @@ function App() {
   const [customChars, setCustomChars] = useState(['3', '1', '5', '6', '8', '0', '7', '9']);
   const [customSeparator, setCustomSeparator] = useState('2');
 
-  // Zigzag 编码：将任意整数（含负数）双射到非负整数
+  // Zigzag 编码：将任意整数（含负数）双射到非负整数，避免 toString() 输出 "-" 号
   const zigzag = (n: number): number => n >= 0 ? n * 2 : -n * 2 - 1;
   const unzigzag = (n: number): number => n % 2 === 0 ? n / 2 : -(n + 1) / 2;
 
-  // 将整数码序列编码为自定义字符串（BigInt 打包方案）
-  // 格式：[2字符头: bitsPerValue] [base-N 编码的打包数据]
-  const codesToStr = (codes: number[], chars: string[]): string => {
-    if (!codes.length) return '';
+  // 将整数码序列编码为自定义字符串（无最小填充，变长编码，负数安全）
+  const codesToStr = (codes: number[], chars: string[], sep: string): string => {
     const base = chars.length;
-    const zigzags = codes.map(val => BigInt(zigzag(val)));
-    const maxZ = zigzags.reduce((m, z) => z > m ? z : m, 0n);
-    const bpv = maxZ === 0n ? 1 : maxZ.toString(2).length;
-    const bpvIdx = bpv - 1;
-    const header = chars[Math.floor(bpvIdx / base)] + chars[bpvIdx % base];
-    let packed = 0n;
-    for (const z of zigzags) packed = (packed << BigInt(bpv)) | z;
-    if (packed === 0n) {
-      const expectedLen = Math.ceil(codes.length * bpv / Math.log2(base));
-      return header + chars[0].repeat(expectedLen);
-    }
-    let encoded = '';
-    while (packed > 0n) {
-      encoded = chars[Number(packed % BigInt(base))] + encoded;
-      packed /= BigInt(base);
-    }
-    const expectedLen = Math.ceil(codes.length * bpv / Math.log2(base));
-    while (encoded.length < expectedLen) encoded = chars[0] + encoded;
-    return header + encoded;
+    return codes.map(val => {
+      const s = zigzag(val).toString(base);
+      return [...s].map(d => chars[parseInt(d, base)]).join('');
+    }).join(sep);
   };
 
-  // 将自定义字符串解码为整数码序列
-  const strToCodes = (text: string, chars: string[]): number[] => {
-    if (text.length < 2) return [];
+  // 将自定义字符串解码为整数码序列（逐字符累加，避免 parseInt 长串溢出）
+  const strToCodes = (text: string, chars: string[], sep: string): number[] => {
     const base = chars.length;
-    const h0 = chars.indexOf(text[0]);
-    const h1 = chars.indexOf(text[1]);
-    if (h0 === -1 || h1 === -1) return [];
-    const bpv = h0 * base + h1 + 1;
-    if (bpv <= 0) return [];
-    const data = text.slice(2);
-    if (!data.length) return [];
-    let packed = 0n;
-    for (const ch of data) {
-      const idx = chars.indexOf(ch);
-      if (idx === -1) return [];
-      packed = packed * BigInt(base) + BigInt(idx);
-    }
-    const totalBits = Math.floor(data.length * Math.log2(base));
-    const count = Math.floor(totalBits / bpv);
-    if (count <= 0) return [];
-    const mask = (1n << BigInt(bpv)) - 1n;
-    const codes: number[] = [];
-    for (let i = count - 1; i >= 0; i--) {
-      const z = Number((packed >> (BigInt(i) * BigInt(bpv))) & mask);
-      codes.push(unzigzag(z));
-    }
-    return codes;
+    return text.split(sep).filter(Boolean).map(group => {
+      let val = 0;
+      for (const ch of group) {
+        const idx = chars.indexOf(ch);
+        if (idx !== -1) val = val * base + idx;
+      }
+      return unzigzag(val);
+    });
   };
 
-  // RLE 编码：连续3+相同值压缩
+  // RLE 编码：对整数流做游程压缩（连续3+相同值）
   const rleEncode = (arr: number[]): number[] => {
     const out: number[] = [];
     let i = 0;
@@ -109,8 +82,13 @@ function App() {
       const v = arr[i];
       let run = 1;
       while (i + run < arr.length && arr[i + run] === v && run < 255) run++;
-      if (run >= 3) { out.push(RLE_MARKER, v, run); i += run; }
-      else { out.push(v); i++; }
+      if (run >= 3) {
+        out.push(RLE_MARKER, v, run);
+        i += run;
+      } else {
+        out.push(v);
+        i++;
+      }
     }
     return out;
   };
@@ -124,12 +102,63 @@ function App() {
         const v = arr[i + 1], count = arr[i + 2];
         for (let k = 0; k < count; k++) out.push(v);
         i += 3;
-      } else { out.push(arr[i]); i++; }
+      } else {
+        out.push(arr[i]);
+        i++;
+      }
     }
     return out;
   };
 
-  // 按位置派生密钥流
+  // LZW 压缩：整数数组 → 整数数组
+  const lzwCompressInts = (arr: number[]): number[] => {
+    const dict = new Map<string, number>();
+    let dictSize = LZW_BASE;
+    const result: number[] = [];
+    let w: number[] = [];
+    for (const v of arr) {
+      const wv = [...w, v];
+      const key = wv.join(',');
+      if (w.length === 0 || dict.has(key)) {
+        w = wv;
+      } else {
+        result.push(w.length === 1 ? w[0] : dict.get(w.join(','))!);
+        if (dictSize < LZW_DICT_MAX) { dict.set(key, dictSize++); }
+        w = [v];
+      }
+    }
+    if (w.length > 0) result.push(w.length === 1 ? w[0] : dict.get(w.join(','))!);
+    return result;
+  };
+
+  // LZW 解压：整数数组 → 整数数组
+  const lzwDecompressInts = (codes: number[]): number[] => {
+    const dict = new Map<number, number[]>();
+    let dictSize = LZW_BASE;
+    const result: number[] = [];
+    if (!codes.length) return result;
+    let w = [codes[0]];
+    result.push(...w);
+    for (let i = 1; i < codes.length; i++) {
+      const k = codes[i];
+      let entry: number[];
+      if (k < LZW_BASE) {
+        entry = [k];
+      } else if (dict.has(k)) {
+        entry = dict.get(k)!;
+      } else if (k === dictSize) {
+        entry = [...w, w[0]];
+      } else {
+        return result;
+      }
+      result.push(...entry);
+      if (dictSize < LZW_DICT_MAX) { dict.set(dictSize++, [...w, entry[0]]); }
+      w = entry;
+    }
+    return result;
+  };
+
+  // 按位置派生密钥流：每个位置独立 32-bit 偏移，密钥空间 ≈ keyLen × 2^32
   const getKeyOffsets = (key: string, length: number): number[] => {
     const offsets: number[] = [];
     let state = 0x12345678;
@@ -142,37 +171,65 @@ function App() {
     return offsets;
   };
 
-  // 加密：RLE压缩 → XOR加密 → BigInt打包
+  // 加密：RLE压缩 → LZW压缩 → XOR加密 → 自定义字符编码
   const encrypt = (text: string, key?: string): { result: string; ratio: number } => {
     if (!text) return { result: '', ratio: 0 };
+
     const chars = customChars;
+
+    // 第一步：明文 charCode 数组
     const plainCodes: number[] = [];
     for (let i = 0; i < text.length; i++) plainCodes.push(text.charCodeAt(i));
-    const uncompressedLen = codesToStr(plainCodes, chars).length;
+
+    // 压缩前长度（基准，用于计算压缩率）
+    const uncompressedLen = codesToStr(plainCodes, chars, customSeparator).length;
+
+    // 第二步：RLE 压缩明文码流
     const rled = rleEncode(plainCodes);
-    const keyOffsets = useKey && key ? getKeyOffsets(key, rled.length) : null;
-    const adjusted = rled.map((v, i) => keyOffsets ? (v ^ keyOffsets[i]) >>> 0 : v);
+
+    // 第三步：LZW 压缩
+    const lzwed = lzwCompressInts(rled);
+
+    // 第四步：按位置密钥流 XOR + 差分 XOR（加密）
+    const keyOffsets = useKey && key ? getKeyOffsets(key, lzwed.length) : null;
+    const adjusted = lzwed.map((v, i) => keyOffsets ? (v ^ keyOffsets[i]) : v);
     const xored: number[] = [adjusted[0]];
     for (let i = 1; i < adjusted.length; i++) xored.push(adjusted[i] ^ adjusted[i - 1]);
-    const result = codesToStr(xored, chars);
+
+    // 第五步：编码为自定义字符
+    const result = codesToStr(xored, chars, customSeparator);
+
     const ratio = uncompressedLen > 0
       ? Math.round((1 - result.length / uncompressedLen) * 100)
       : 0;
+
     return { result, ratio };
   };
 
-  // 解密：自定义字符解码 → 逆XOR → RLE解压 → 原文
+  // 解密：自定义字符解码 → 逆XOR → LZW解压 → RLE解压 → 原文
   const decrypt = (text: string, key?: string): string => {
     if (!text) return '';
+
     const chars = customChars;
-    const xored = strToCodes(text, chars);
+
+    // 第一步：解码自定义字符 → XOR 流
+    const xored = strToCodes(text, chars, customSeparator);
     if (!xored.length) return '';
+
+    // 第二步：逆差分 XOR
     const adjusted: number[] = [xored[0]];
     for (let i = 1; i < xored.length; i++) adjusted.push(xored[i] ^ adjusted[i - 1]);
+
+    // 第三步：去除按位置密钥流 XOR（XOR 自反，与加密相同操作即可还原）
     const keyOffsets = useKey && key ? getKeyOffsets(key, adjusted.length) : null;
-    const rled = adjusted.map((v, i) => keyOffsets ? (v ^ keyOffsets[i]) >>> 0 : v);
+    const lzwed = adjusted.map((v, i) => keyOffsets ? (v ^ keyOffsets[i]) : v);
+
+    // 第四步：LZW 解压
+    const rled = lzwDecompressInts(lzwed);
+
+    // 第五步：RLE 解压 → 原始 charCode → 转回字符
     const plainCodes = rleDecode(rled);
-    return plainCodes.map(c => String.fromCharCode(c)).join('');
+    return plainCodes.map(c => c >= 0 ? String.fromCharCode(c) : '').join('');
   };
 
   // 处理加密
