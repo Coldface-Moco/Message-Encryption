@@ -453,6 +453,7 @@ export default function App() {
                   numberOfLines={5}
                   editable={false}
                   textAlignVertical="top"
+                  scrollEnabled
                 />
                 <View style={styles.outputMeta}>
                   {compressionRatio !== null ? (
@@ -774,6 +775,7 @@ const styles = StyleSheet.create({
   },
   outputArea: {
     backgroundColor: '#f3f4f6',
+    maxHeight: 300,
   },
   countText: {
     fontSize: 12,
