@@ -446,15 +446,9 @@ export default function App() {
                     )}
                   </TouchableOpacity>
                 </View>
-                <TextInput
-                  style={[styles.textArea, styles.outputArea]}
-                  value={outputText}
-                  multiline
-                  numberOfLines={5}
-                  editable={false}
-                  textAlignVertical="top"
-                  scrollEnabled
-                />
+                <ScrollView style={[styles.textArea, styles.outputArea]} nestedScrollEnabled>
+                  <Text style={{ fontSize: 14, color: '#111827', lineHeight: 20 }}>{outputText}</Text>
+                </ScrollView>
                 <View style={styles.outputMeta}>
                   {compressionRatio !== null ? (
                     <View style={[styles.compressionRow, compressionRatio > 0 ? styles.compressionGood : compressionRatio < 0 ? styles.compressionBad : styles.compressionNeutral]}>
