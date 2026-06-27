@@ -37,10 +37,23 @@ import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix3`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix4`;
 
 const CHANGELOG_ITEMS = [
   '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
+];
+
+const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
+  {
+    version: 'v1.1.2',
+    items: [
+      '修复使用密钥加密/解密完全失败的问题',
+      '密钥应用方式改为 XOR 运算，天然 32-bit 封闭无溢出',
+      '修复 null 字符（charCode=0）在解密后丢失的问题',
+      '新增分隔符与自定义字符冲突校验，防止设置错误导致解密失败',
+      '优化 LZW 字典大小限制，防止极端输入导致内存溢出',
+    ],
+  },
 ];
 
 export default function App() {
@@ -56,6 +69,7 @@ export default function App() {
   const [customSeparator, setCustomSeparator] = useState('2');
   const [compressionRatio, setCompressionRatio] = useState<number | null>(null);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showPreviousChangelog, setShowPreviousChangelog] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
 
   const { status: updateStatus, progress: updateProgress, checkForUpdate, autoCheck } = useAppUpdater();
@@ -166,13 +180,41 @@ export default function App() {
               </TouchableOpacity>
             </View>
             <Text style={styles.modalSubtitle}>本次更新内容</Text>
-            <ScrollView style={{ maxHeight: 300 }} showsVerticalScrollIndicator={true}>
+            <ScrollView style={{ maxHeight: 400 }} showsVerticalScrollIndicator={true}>
               {CHANGELOG_ITEMS.map((item, i) => (
                 <View key={i} style={styles.changelogItem}>
                   <View style={styles.changelogDot} />
                   <Text style={styles.changelogText}>{item}</Text>
                 </View>
               ))}
+
+              {/* 以往更新折叠区 */}
+              {CHANGELOG_PREVIOUS.length > 0 && (
+                <View style={{ marginTop: 16 }}>
+                  <TouchableOpacity
+                    style={styles.collapseHeader}
+                    onPress={() => setShowPreviousChangelog(!showPreviousChangelog)}
+                  >
+                    <Text style={styles.collapseTitle}>以往更新内容</Text>
+                    <Text style={styles.collapseArrow}>{showPreviousChangelog ? '▲' : '▼'}</Text>
+                  </TouchableOpacity>
+                  {showPreviousChangelog && (
+                    <View style={{ marginTop: 8 }}>
+                      {CHANGELOG_PREVIOUS.map((section, si) => (
+                        <View key={si} style={{ marginBottom: 12 }}>
+                          <Text style={styles.collapseVersion}>{section.version}</Text>
+                          {section.items.map((item, ii) => (
+                            <View key={ii} style={styles.changelogItem}>
+                              <View style={[styles.changelogDot, { backgroundColor: '#9ca3af' }]} />
+                              <Text style={styles.changelogText}>{item}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
             </ScrollView>
             <TouchableOpacity style={styles.modalBtn} onPress={dismissChangelog}>
               <Text style={styles.modalBtnText}>我知道了</Text>
@@ -200,14 +242,43 @@ export default function App() {
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={{ paddingBottom: 8 }}>
-              <Text style={styles.modalSubtitle}>更新内容</Text>
+              <Text style={styles.modalSubtitle}>本次更新内容</Text>
               {CHANGELOG_ITEMS.map((item, i) => (
                 <View key={i} style={styles.changelogItem}>
                   <View style={styles.changelogDot} />
                   <Text style={styles.changelogText}>{item}</Text>
                 </View>
               ))}
-              <View style={[styles.changelogItem, { marginTop: 12 }]}>
+
+              {/* 以往更新折叠区 */}
+              {CHANGELOG_PREVIOUS.length > 0 && (
+                <View style={{ marginTop: 16 }}>
+                  <TouchableOpacity
+                    style={styles.collapseHeader}
+                    onPress={() => setShowPreviousChangelog(!showPreviousChangelog)}
+                  >
+                    <Text style={styles.collapseTitle}>以往更新内容</Text>
+                    <Text style={styles.collapseArrow}>{showPreviousChangelog ? '▲' : '▼'}</Text>
+                  </TouchableOpacity>
+                  {showPreviousChangelog && (
+                    <View style={{ marginTop: 8 }}>
+                      {CHANGELOG_PREVIOUS.map((section, si) => (
+                        <View key={si} style={{ marginBottom: 12 }}>
+                          <Text style={styles.collapseVersion}>{section.version}</Text>
+                          {section.items.map((item, ii) => (
+                            <View key={ii} style={styles.changelogItem}>
+                              <View style={[styles.changelogDot, { backgroundColor: '#9ca3af' }]} />
+                              <Text style={styles.changelogText}>{item}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
+
+              <View style={[styles.changelogItem, { marginTop: 16 }]}>
                 <View style={styles.changelogDot} />
                 <Text style={styles.changelogText}>关于本项目：</Text>
               </View>
@@ -965,5 +1036,32 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
+  },
+  collapseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  collapseTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  collapseArrow: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  collapseVersion: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginBottom: 6,
+    marginLeft: 4,
   },
 });

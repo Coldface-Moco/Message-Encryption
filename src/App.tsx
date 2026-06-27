@@ -12,16 +12,23 @@ const LZW_BASE = 262144;
 const LZW_DICT_MAX = 524288; // 字典最多 262144 个条目，防止极端输入撑爆内存
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix3`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix4`;
 
 const CHANGELOG_ITEMS = [
-  '修复 null 字符（charCode=0）丢失问题：c > 0 改为 c >= 0',
-  '修复分隔符与自定义字符冲突导致解密失败：输入时自动拒绝冲突字符',
-  '修复 LZW 字典无上限内存风险：增加 262144 条目上限',
-  '修复密钥加密/解密失败：密钥偏移由加法改为 XOR，解决 32-bit 溢出问题',
-  '修复负数编码符号丢失导致解密失败的问题',
-  '修复 parseInt 长串溢出导致解码精度丢失的问题',
-  '升级密钥算法：密钥空间从 1000 种扩展至 keyLen × 2³²，大幅增强安全性',
+  '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
+];
+
+const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
+  {
+    version: 'v1.1.2',
+    items: [
+      '修复使用密钥加密/解密完全失败的问题',
+      '密钥应用方式改为 XOR 运算，天然 32-bit 封闭无溢出',
+      '修复 null 字符（charCode=0）在解密后丢失的问题',
+      '新增分隔符与自定义字符冲突校验，防止设置错误导致解密失败',
+      '优化 LZW 字典大小限制，防止极端输入导致内存溢出',
+    ],
+  },
 ];
 
 function App() {
@@ -34,6 +41,7 @@ function App() {
   const [showCustomSettings, setShowCustomSettings] = useState(false);
   const [compressionRatio, setCompressionRatio] = useState<number | null>(null);
   const [showChangelog, setShowChangelog] = useState(false);
+  const [showPreviousChangelog, setShowPreviousChangelog] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem(CHANGELOG_KEY)) setShowChangelog(true);
@@ -322,17 +330,49 @@ function App() {
               </button>
             </div>
             <p className="text-sm text-gray-500 mb-3">本次更新内容</p>
-            <ul className="space-y-2 mb-6">
-              {CHANGELOG_ITEMS.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="mt-1.5 w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <div className="max-h-[400px] overflow-y-auto">
+              <ul className="space-y-2 mb-4">
+                {CHANGELOG_ITEMS.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {/* 以往更新折叠区 */}
+              {CHANGELOG_PREVIOUS.length > 0 && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowPreviousChangelog(!showPreviousChangelog)}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-gray-100 rounded-lg border border-gray-200 hover:bg-gray-200 transition-colors"
+                  >
+                    <span className="text-sm font-semibold text-gray-700">以往更新内容</span>
+                    <span className="text-xs text-gray-500">{showPreviousChangelog ? '▲' : '▼'}</span>
+                  </button>
+                  {showPreviousChangelog && (
+                    <div className="mt-3 space-y-4">
+                      {CHANGELOG_PREVIOUS.map((section, si) => (
+                        <div key={si}>
+                          <p className="text-xs font-semibold text-gray-500 mb-2 ml-1">{section.version}</p>
+                          <ul className="space-y-2">
+                            {section.items.map((item, ii) => (
+                              <li key={ii} className="flex items-start gap-2 text-sm text-gray-700">
+                                <span className="mt-1.5 w-2 h-2 rounded-full bg-gray-400 shrink-0" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <button
               onClick={dismissChangelog}
-              className="w-full py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors"
+              className="w-full py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors mt-4"
             >
               我知道了
             </button>
