@@ -36,15 +36,12 @@ import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
-const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
+const CHANGELOG_VERSION = 'v1.1.3';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}`;
 
 const CHANGELOG_ITEMS = [
-  '修复使用密钥加密/解密完全失败的问题',
-  '密钥应用方式改为 XOR 运算，天然 32-bit 封闭无溢出',
-  '修复 null 字符（charCode=0）在解密后丢失的问题',
-  '新增分隔符与自定义字符冲突校验，防止设置错误导致解密失败',
-  '优化 LZW 字典大小限制，防止极端输入导致内存溢出',
+  '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
+  '更新版本号至 v1.1.3',
 ];
 
 export default function App() {
@@ -247,76 +244,6 @@ export default function App() {
             <Text style={styles.headerSubtitle}>您的消息助手！</Text>
           </View>
 
-          {/* 自定义设置区域 */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View style={styles.cardHeaderLeft}>
-                <Settings size={18} color="#374151" />
-                <Text style={styles.cardTitle}>自定义设置</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.toggleBtn}
-                onPress={() => setShowCustomSettings(!showCustomSettings)}
-              >
-                <Text style={styles.toggleBtnText}>
-                  {showCustomSettings ? '收起' : '展开'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={styles.cardDesc}>
-              自定义密文字符和分隔符，让你的加密更个性化
-            </Text>
-
-            {showCustomSettings && (
-              <View style={styles.settingsBody}>
-                <Text style={styles.settingsLabel}>
-                  密文字符设置（当前使用 {customChars.length} 个字符）
-                </Text>
-                <View style={styles.charGrid}>
-                  {customChars.map((char, index) => (
-                    <View key={index} style={styles.charInputWrap}>
-                      <Text style={styles.charLabel}>字符 {index + 1}</Text>
-                      <TextInput
-                        style={styles.charInput}
-                        value={char}
-                        onChangeText={(v) => updateCustomChar(index, v)}
-                        maxLength={1}
-                        textAlign="center"
-                      />
-                    </View>
-                  ))}
-                </View>
-
-                <Text style={styles.settingsLabel}>分隔符</Text>
-                <TextInput
-                  style={styles.separatorInput}
-                  value={customSeparator}
-                  onChangeText={(v) => {
-                    const ch = v.slice(0, 1);
-                    if (!ch) return;
-                    // 分隔符不能与自定义字符重复
-                    if (customChars.includes(ch)) return;
-                    setCustomSeparator(ch);
-                  }}
-                  maxLength={1}
-                  textAlign="center"
-                />
-
-                <View style={styles.settingsFooter}>
-                  <Text style={styles.previewText}>
-                    预览: {customChars.join('')} (分隔符: {customSeparator})
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.resetBtn}
-                    onPress={resetToDefault}
-                  >
-                    <Text style={styles.resetBtnText}>恢复默认</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-          </View>
-
           {/* 主要功能区域 */}
           <View style={styles.card}>
             <View style={styles.cardHeaderCenter}>
@@ -468,6 +395,76 @@ export default function App() {
             )}
           </View>
 
+          {/* 自定义设置区域 */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.cardHeaderLeft}>
+                <Settings size={18} color="#374151" />
+                <Text style={styles.cardTitle}>自定义设置</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.toggleBtn}
+                onPress={() => setShowCustomSettings(!showCustomSettings)}
+              >
+                <Text style={styles.toggleBtnText}>
+                  {showCustomSettings ? '收起' : '展开'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.cardDesc}>
+              自定义密文字符和分隔符，让你的加密更个性化
+            </Text>
+
+            {showCustomSettings && (
+              <View style={styles.settingsBody}>
+                <Text style={styles.settingsLabel}>
+                  密文字符设置（当前使用 {customChars.length} 个字符）
+                </Text>
+                <View style={styles.charGrid}>
+                  {customChars.map((char, index) => (
+                    <View key={index} style={styles.charInputWrap}>
+                      <Text style={styles.charLabel}>字符 {index + 1}</Text>
+                      <TextInput
+                        style={styles.charInput}
+                        value={char}
+                        onChangeText={(v) => updateCustomChar(index, v)}
+                        maxLength={1}
+                        textAlign="center"
+                      />
+                    </View>
+                  ))}
+                </View>
+
+                <Text style={styles.settingsLabel}>分隔符</Text>
+                <TextInput
+                  style={styles.separatorInput}
+                  value={customSeparator}
+                  onChangeText={(v) => {
+                    const ch = v.slice(0, 1);
+                    if (!ch) return;
+                    // 分隔符不能与自定义字符重复
+                    if (customChars.includes(ch)) return;
+                    setCustomSeparator(ch);
+                  }}
+                  maxLength={1}
+                  textAlign="center"
+                />
+
+                <View style={styles.settingsFooter}>
+                  <Text style={styles.previewText}>
+                    预览: {customChars.join('')} (分隔符: {customSeparator})
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.resetBtn}
+                    onPress={resetToDefault}
+                  >
+                    <Text style={styles.resetBtnText}>恢复默认</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+
           {/* 说明区域 */}
           <View style={styles.card}>
             <View style={styles.cardHeaderCenter}>
@@ -493,7 +490,7 @@ export default function App() {
 
           {/* 页脚 */}
           <View style={styles.footerRow}>
-            <Text style={styles.footer}>@2026 Build V1.1.2 版权所有</Text>
+            <Text style={styles.footer}>@2026 Build V1.1.3 版权所有</Text>
             <TouchableOpacity
               style={styles.updateBtn}
               onPress={checkForUpdate}
