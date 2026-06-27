@@ -36,8 +36,8 @@ import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
-const CHANGELOG_VERSION = 'v1.1.3';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}`;
+const CHANGELOG_VERSION = 'v1.1.2';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix2`;
 
 const CHANGELOG_ITEMS = [
   '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
@@ -490,7 +490,7 @@ export default function App() {
 
           {/* 页脚 */}
           <View style={styles.footerRow}>
-            <Text style={styles.footer}>@2026 Build V1.1.3 版权所有</Text>
+            <Text style={styles.footer}>@2026 Build V1.1.2 版权所有</Text>
             <TouchableOpacity
               style={styles.updateBtn}
               onPress={checkForUpdate}

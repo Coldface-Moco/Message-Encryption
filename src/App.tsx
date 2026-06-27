@@ -351,78 +351,6 @@ function App() {
           <p className="text-lg text-gray-600">{"您的消息助手！"}</p>
         </div>
 
-        {/* 自定义设置区域 */}
-        <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <Settings className="w-5 h-5" />
-                <span>自定义设置</span>
-              </CardTitle>
-              <Button
-                onClick={() => setShowCustomSettings(!showCustomSettings)}
-                variant="outline"
-                size="sm"
-              >
-                {showCustomSettings ? '收起' : '展开'}
-              </Button>
-            </div>
-            <CardDescription>
-              自定义密文字符和分隔符，让你的加密更个性化
-            </CardDescription>
-          </CardHeader>
-          {showCustomSettings && (
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium mb-3 block">密文字符设置（当前使用 {customChars.length} 个字符）</Label>
-                  <div className="grid grid-cols-4 gap-3">
-                    {customChars.map((char, index) => (
-                      <div key={index} className="space-y-1">
-                        <Label className="text-xs text-gray-500">字符 {index + 1}</Label>
-                        <input
-                          type="text"
-                          value={char}
-                          onChange={(e) => updateCustomChar(index, e.target.value)}
-                          maxLength={1}
-                          className="w-full px-3 py-2 text-center border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-                          placeholder="字符"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="separator">分隔符</Label>
-                  <input
-                    type="text"
-                    id="separator"
-                    value={customSeparator}
-                    onChange={(e) => updateSeparator(e.target.value)}
-                    maxLength={1}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
-                    placeholder="分隔符"
-                  />
-                </div>
-
-                <div className="flex justify-between items-center pt-4">
-                  <div className="text-sm text-gray-600">
-                    预览: {customChars.join('')} (分隔符: {customSeparator})
-                  </div>
-                  <Button
-                    onClick={resetToDefault}
-                    variant="outline"
-                    size="sm"
-                  >
-                    恢复默认
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          )}
-        </Card>
-
         {/* 主要功能区域 */}
         <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
           <CardHeader>
@@ -570,6 +498,78 @@ function App() {
               </div>
             )}
           </CardContent>
+        </Card>
+
+        {/* 自定义设置区域 */}
+        <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <Settings className="w-5 h-5" />
+                <span>自定义设置</span>
+              </CardTitle>
+              <Button
+                onClick={() => setShowCustomSettings(!showCustomSettings)}
+                variant="outline"
+                size="sm"
+              >
+                {showCustomSettings ? '收起' : '展开'}
+              </Button>
+            </div>
+            <CardDescription>
+              自定义密文字符和分隔符，让你的加密更个性化
+            </CardDescription>
+          </CardHeader>
+          {showCustomSettings && (
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium mb-3 block">密文字符设置（当前使用 {customChars.length} 个字符）</Label>
+                  <div className="grid grid-cols-4 gap-3">
+                    {customChars.map((char, index) => (
+                      <div key={index} className="space-y-1">
+                        <Label className="text-xs text-gray-500">字符 {index + 1}</Label>
+                        <input
+                          type="text"
+                          value={char}
+                          onChange={(e) => updateCustomChar(index, e.target.value)}
+                          maxLength={1}
+                          className="w-full px-3 py-2 text-center border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+                          placeholder="字符"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="separator">分隔符</Label>
+                  <input
+                    type="text"
+                    id="separator"
+                    value={customSeparator}
+                    onChange={(e) => updateSeparator(e.target.value)}
+                    maxLength={1}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
+                    placeholder="分隔符"
+                  />
+                </div>
+
+                <div className="flex justify-between items-center pt-4">
+                  <div className="text-sm text-gray-600">
+                    预览: {customChars.join('')} (分隔符: {customSeparator})
+                  </div>
+                  <Button
+                    onClick={resetToDefault}
+                    variant="outline"
+                    size="sm"
+                  >
+                    恢复默认
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         {/* 说明区域 */}
