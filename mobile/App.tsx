@@ -41,7 +41,6 @@ const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix2`;
 
 const CHANGELOG_ITEMS = [
   '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
-  '更新版本号至 v1.1.3',
 ];
 
 export default function App() {
