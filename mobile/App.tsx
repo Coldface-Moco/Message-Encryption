@@ -37,7 +37,7 @@ import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix2`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix3`;
 
 const CHANGELOG_ITEMS = [
   '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',

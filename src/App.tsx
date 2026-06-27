@@ -12,7 +12,7 @@ const LZW_BASE = 262144;
 const LZW_DICT_MAX = 524288; // 字典最多 262144 个条目，防止极端输入撑爆内存
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix3`;
 
 const CHANGELOG_ITEMS = [
   '修复 null 字符（charCode=0）丢失问题：c > 0 改为 c >= 0',
