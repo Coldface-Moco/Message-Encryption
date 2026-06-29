@@ -676,7 +676,7 @@ function App() {
 
         {/* 页脚 */}
         <div className="text-center py-6">
-          <p className="text-sm text-gray-500">{"@2026 Build V1.1.3 版权所有"}</p>
+          <p className="text-sm text-gray-500">{"@2026 Build V1.1.2 版权所有"}</p>
         </div>
       </div>
     </div>
