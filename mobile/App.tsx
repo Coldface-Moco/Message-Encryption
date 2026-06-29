@@ -31,22 +31,24 @@ import {
   TrendingDown,
   RefreshCw,
   Info,
+  ClipboardPaste,
 } from 'lucide-react-native';
 import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
-const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix4`;
+const CHANGELOG_VERSION = 'v1.1.3';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
 
 const CHANGELOG_ITEMS = [
-  '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
+  '输入框新增粘贴按钮：清除内容后显示，一键粘贴剪贴板内容',
 ];
 
 const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
   {
     version: 'v1.1.2',
     items: [
+      '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
       '修复使用密钥加密/解密完全失败的问题',
       '密钥应用方式改为 XOR 运算，天然 32-bit 封闭无溢出',
       '修复 null 字符（charCode=0）在解密后丢失的问题',
@@ -138,6 +140,15 @@ export default function App() {
     setInputText('');
     setOutputText('');
     setCompressionRatio(null);
+  }, []);
+
+  const pasteFromClipboard = useCallback(async () => {
+    try {
+      const text = await Clipboard.getStringAsync();
+      if (text) setInputText(text);
+    } catch (err) {
+      console.error('粘贴失败:', err);
+    }
   }, []);
 
   const resetToDefault = useCallback(() => {
@@ -371,13 +382,21 @@ export default function App() {
             <View style={styles.section}>
               <View style={styles.inputHeader}>
                 <Text style={styles.label}>输入内容</Text>
-                {inputText.length > 0 && (
+                {inputText.length > 0 ? (
                   <TouchableOpacity
                     style={styles.clearBtn}
                     onPress={clearInputText}
                   >
                     <X size={14} color="#ef4444" />
                     <Text style={styles.clearBtnText}>清除</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.pasteBtn}
+                    onPress={pasteFromClipboard}
+                  >
+                    <ClipboardPaste size={14} color="#3b82f6" />
+                    <Text style={styles.pasteBtnText}>粘贴</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -560,7 +579,7 @@ export default function App() {
 
           {/* 页脚 */}
           <View style={styles.footerRow}>
-            <Text style={styles.footer}>@2026 Build V1.1.2 版权所有</Text>
+            <Text style={styles.footer}>@2026 Build V1.1.3 版权所有</Text>
             <TouchableOpacity
               style={styles.updateBtn}
               onPress={checkForUpdate}
@@ -821,6 +840,21 @@ const styles = StyleSheet.create({
   clearBtnText: {
     fontSize: 12,
     color: '#ef4444',
+    marginLeft: 2,
+  },
+  pasteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  pasteBtnText: {
+    fontSize: 12,
+    color: '#3b82f6',
     marginLeft: 2,
   },
   textArea: {

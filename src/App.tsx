@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Copy, Shield, CheckCircle, Key, Eye, EyeOff, Settings, X, TrendingDown, Rocket } from 'lucide-react';
+import { Copy, Shield, CheckCircle, Key, Eye, EyeOff, Settings, X, TrendingDown, Rocket, ClipboardPaste } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,17 +11,18 @@ const RLE_MARKER = 131072;
 const LZW_BASE = 262144;
 const LZW_DICT_MAX = 524288; // 字典最多 262144 个条目，防止极端输入撑爆内存
 
-const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix4`;
+const CHANGELOG_VERSION = 'v1.1.3';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
 
 const CHANGELOG_ITEMS = [
-  '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
+  '输入框新增粘贴按钮：清除内容后显示，一键粘贴剪贴板内容',
 ];
 
 const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
   {
     version: 'v1.1.2',
     items: [
+      '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
       '修复使用密钥加密/解密完全失败的问题',
       '密钥应用方式改为 XOR 运算，天然 32-bit 封闭无溢出',
       '修复 null 字符（charCode=0）在解密后丢失的问题',
@@ -314,6 +315,16 @@ function App() {
     setCompressionRatio(null);
   };
 
+  // 从剪贴板粘贴内容
+  const pasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) setInputText(text);
+    } catch (err) {
+      console.error('粘贴失败:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
       {/* 更新日志弹窗 */}
@@ -447,7 +458,7 @@ function App() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="input-text">输入内容</Label>
-                {inputText && (
+                {inputText ? (
                   <Button
                     onClick={clearInputText}
                     variant="outline"
@@ -456,6 +467,16 @@ function App() {
                   >
                     <X className="w-4 h-4 mr-1" />
                     清除
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={pasteFromClipboard}
+                    variant="outline"
+                    size="sm"
+                    className="transition-all duration-300 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600"
+                  >
+                    <ClipboardPaste className="w-4 h-4 mr-1" />
+                    粘贴
                   </Button>
                 )}
               </div>
@@ -655,7 +676,7 @@ function App() {
 
         {/* 页脚 */}
         <div className="text-center py-6">
-          <p className="text-sm text-gray-500">{"@2026 Build V1.1.2 版权所有"}</p>
+          <p className="text-sm text-gray-500">{"@2026 Build V1.1.3 版权所有"}</p>
         </div>
       </div>
     </div>
