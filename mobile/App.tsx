@@ -848,14 +848,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
-    backgroundColor: '#eff6ff',
+    backgroundColor: '#f3f4f6',
     borderWidth: 1,
-    borderColor: '#bfdbfe',
+    borderColor: '#e5e7eb',
   },
   pasteBtnText: {
     fontSize: 12,
-    color: '#3b82f6',
-    marginLeft: 2,
+    color: '#374151',
+    marginLeft: 4,
   },
   textArea: {
     borderWidth: 1,

@@ -473,9 +473,9 @@ function App() {
                     onClick={pasteFromClipboard}
                     variant="outline"
                     size="sm"
-                    className="transition-all duration-300 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600"
+                    className="transition-all duration-300 hover:bg-blue-50"
                   >
-                    <ClipboardPaste className="w-4 h-4 mr-1" />
+                    <ClipboardPaste className="w-4 h-4 mr-2" />
                     粘贴
                   </Button>
                 )}
