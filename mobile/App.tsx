@@ -37,8 +37,8 @@ import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
-const CHANGELOG_VERSION = 'v1.1.3';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
+const CHANGELOG_VERSION = 'v1.1.2';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix5`;
 
 const CHANGELOG_ITEMS = [
   '输入框新增粘贴按钮：清除内容后显示，一键粘贴剪贴板内容',

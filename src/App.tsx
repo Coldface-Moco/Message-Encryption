@@ -11,8 +11,8 @@ const RLE_MARKER = 131072;
 const LZW_BASE = 262144;
 const LZW_DICT_MAX = 524288; // 字典最多 262144 个条目，防止极端输入撑爆内存
 
-const CHANGELOG_VERSION = 'v1.1.3';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
+const CHANGELOG_VERSION = 'v1.1.2';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix5`;
 
 const CHANGELOG_ITEMS = [
   '输入框新增粘贴按钮：清除内容后显示，一键粘贴剪贴板内容',
