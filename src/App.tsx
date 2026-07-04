@@ -43,9 +43,18 @@ function App() {
   const [compressionRatio, setCompressionRatio] = useState<number | null>(null);
   const [showChangelog, setShowChangelog] = useState(false);
   const [showPreviousChangelog, setShowPreviousChangelog] = useState(false);
+  const [visitCount, setVisitCount] = useState(0);
 
   useEffect(() => {
     if (!localStorage.getItem(CHANGELOG_KEY)) setShowChangelog(true);
+  }, []);
+
+  useEffect(() => {
+    const key = 'visit_count';
+    const current = Number(localStorage.getItem(key)) || 0;
+    const next = current + 1;
+    localStorage.setItem(key, String(next));
+    setVisitCount(next);
   }, []);
 
   const dismissChangelog = useCallback(() => {
@@ -676,7 +685,11 @@ function App() {
 
         {/* 页脚 */}
         <div className="text-center py-6">
-          <p className="text-sm text-gray-500">{"@2026 Build V1.1.2 版权所有"}</p>
+          <p className="text-sm text-gray-500">
+            {"@2026 Build V1.1.2 版权所有"}
+            <span className="mx-2">·</span>
+            {"访问量" + String(visitCount).padStart(5, '0') + "次"}
+          </p>
         </div>
       </div>
     </div>
