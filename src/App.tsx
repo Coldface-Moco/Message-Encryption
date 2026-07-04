@@ -50,11 +50,22 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const key = 'visit_count';
-    const current = Number(localStorage.getItem(key)) || 0;
-    const next = current + 1;
-    localStorage.setItem(key, String(next));
-    setVisitCount(next);
+    const COUNTER_KEY = 'message-encryption-visits';
+    // 使用免费 CountAPI 实现全局计数
+    fetch(`https://countapi.mileshilliard.com/api/v1/hit/${COUNTER_KEY}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.value === 'number') {
+          setVisitCount(data.value);
+        }
+      })
+      .catch(() => {
+        // API 不可用时回退到 localStorage
+        const local = Number(localStorage.getItem('visit_count')) || 0;
+        const next = local + 1;
+        localStorage.setItem('visit_count', String(next));
+        setVisitCount(next);
+      });
   }, []);
 
   const dismissChangelog = useCallback(() => {
