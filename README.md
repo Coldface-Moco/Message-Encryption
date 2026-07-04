@@ -1,7 +1,7 @@
 # Message Encryption
 
 消息加密与压缩工具 - 支持 RLE、LZW 和 Zigzag 算法的 Web 应用和移动端应用。
-
+Web版演示地址：https://coldface-moco.github.io/Message-Encryption/
 ## 项目简介
 
 Message Encryption 是一个用于消息加密和压缩的工具应用，提供两种使用方式：
