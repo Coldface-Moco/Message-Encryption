@@ -135,16 +135,20 @@ export function encrypt(
 
   const { customChars, customSeparator, useKey, key } = options;
 
-  if (customChars.length < 4) {
+  const validChars = customChars.filter(c => c.length > 0);
+  if (validChars.length < 4) {
     throw new Error('密文字符不能少于4个，请在自定义设置中添加更多字符');
   }
+
+  // 使用过滤后的有效字符
+  const chars = validChars;
 
   // 第一步：明文 charCode 数组
   const plainCodes: number[] = [];
   for (let i = 0; i < text.length; i++) plainCodes.push(text.charCodeAt(i));
 
   // 压缩前长度（基准）
-  const uncompressedLen = codesToStr(plainCodes, customChars, customSeparator).length;
+  const uncompressedLen = codesToStr(plainCodes, chars, customSeparator).length;
 
   // 第二步：RLE 压缩明文码流
   const rled = rleEncode(plainCodes);
@@ -160,7 +164,7 @@ export function encrypt(
   for (let i = 1; i < adjusted.length; i++) xored.push(adjusted[i] ^ adjusted[i - 1]);
 
   // 第五步：编码为自定义字符
-  const result = codesToStr(xored, customChars, customSeparator);
+  const result = codesToStr(xored, chars, customSeparator);
 
   const ratio = uncompressedLen > 0
     ? Math.round((1 - result.length / uncompressedLen) * 100)
@@ -184,12 +188,16 @@ export function decrypt(
 
   const { customChars, customSeparator, useKey, key } = options;
 
-  if (customChars.length < 4) {
+  const validChars = customChars.filter(c => c.length > 0);
+  if (validChars.length < 4) {
     throw new Error('密文字符不能少于4个，请在自定义设置中添加更多字符');
   }
 
+  // 使用过滤后的有效字符
+  const chars = validChars;
+
   // 第一步：解码自定义字符 → XOR 流
-  const xored = strToCodes(text, customChars, customSeparator);
+  const xored = strToCodes(text, chars, customSeparator);
   if (!xored.length) return '';
 
   // 第二步：逆差分 XOR

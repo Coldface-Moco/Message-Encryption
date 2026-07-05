@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { encrypt, decrypt } from '@/lib/encryption';
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix8`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix9`;
 
 const CHANGELOG_ITEMS = [
+  '修复密文字符校验：正确计算有效字符数量（忽略空字符）',
   '密文字符最少需要4个，少于4个时提示错误并禁用加密解密',
   '修复自定义字符输入体验：支持退格键/删除键清空后直接输入',
   '修复自定义字符和分隔符无法修改的问题',
@@ -355,14 +356,14 @@ function App() {
             <div className="flex justify-center space-x-4">
               <Button
                 onClick={handleEncrypt}
-                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.length < 4}
+                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4}
                 className="px-8 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white transition-all duration-300"
               >
                 加密
               </Button>
               <Button
                 onClick={handleDecrypt}
-                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.length < 4}
+                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4}
                 className="px-8 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white transition-all duration-300"
               >
                 解密
@@ -444,8 +445,8 @@ function App() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium mb-3 block">密文字符设置（当前使用 {customChars.length} 个字符）</Label>
-                  {customChars.length < 4 && (
+                  <Label className="text-sm font-medium mb-3 block">密文字符设置（当前使用 {customChars.filter(c => c.length > 0).length} 个字符）</Label>
+                  {customChars.filter(c => c.length > 0).length < 4 && (
                     <p className="text-xs text-red-500 mb-2">⚠️ 密文字符不能少于4个，否则无法加密解密</p>
                   )}
                   <div className="grid grid-cols-4 gap-3">
