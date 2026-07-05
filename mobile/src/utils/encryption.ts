@@ -12,9 +12,14 @@ function unzigzag(n: number): number { return n % 2 === 0 ? n / 2 : -(n + 1) / 2
 /** 将整数码序列编码为自定义字符串（无最小填充，负数安全） */
 function codesToStr(codes: number[], chars: string[], sep: string): string {
   const base = chars.length;
+  if (base < 2 || base > 36) throw new Error('自定义字符数量必须在 2-36 之间');
   return codes.map(val => {
     const s = zigzag(val).toString(base);
-    return [...s].map(d => chars[parseInt(d, base)]).join('');
+    return [...s].map(d => {
+      const idx = parseInt(d, base);
+      if (idx < 0 || idx >= base) throw new Error('编码字符超出范围');
+      return chars[idx];
+    }).join('');
   }).join(sep);
 }
 

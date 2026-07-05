@@ -134,6 +134,7 @@ function App() {
   const updateCustomChar = (index: number, value: string) => {
     const ch = value.slice(0, 1);
     if (!ch) return;
+    if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
     if (customChars.some((c, i) => i !== index && c === ch)) return; // 字符间重复
     if (ch === customSeparator) return; // 与分隔符冲突
     const newChars = [...customChars];
@@ -145,6 +146,7 @@ function App() {
   const updateSeparator = (value: string) => {
     const ch = value.slice(0, 1);
     if (!ch) return;
+    if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
     if (customChars.includes(ch)) return; // 与自定义字符冲突
     setCustomSeparator(ch);
   };
@@ -509,6 +511,12 @@ function App() {
                 <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
                 <div>
                   <strong>特点：</strong>支持中英文混合文本，采用可逆加密算法，确保信息无损失
+                </div>
+              </div>
+              <div className="flex items-start space-x-3 mt-4 pt-4 border-t border-gray-200">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                <div className="text-xs text-gray-500">
+                  <strong>免责声明：</strong>本工具为趣味编码工具，采用 XOR 运算进行混淆，不适用于真正需要安全性的场景。如需保护敏感信息，请使用专业加密软件。
                 </div>
               </div>
             </div>

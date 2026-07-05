@@ -165,6 +165,7 @@ export default function App() {
   const updateCustomChar = useCallback((index: number, value: string) => {
     const ch = value.slice(0, 1);
     if (!ch) return;
+    if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
     setCustomChars((prev) => {
       // 若其他位置已有该字符或与分隔符冲突，则忽略本次更新
       if (prev.some((c, i) => i !== index && c === ch) || ch === customSeparator) return prev;
@@ -537,6 +538,7 @@ export default function App() {
                   onChangeText={(v) => {
                     const ch = v.slice(0, 1);
                     if (!ch) return;
+                    if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
                     // 分隔符不能与自定义字符重复
                     if (customChars.includes(ch)) return;
                     setCustomSeparator(ch);
@@ -580,6 +582,12 @@ export default function App() {
                   <Text style={styles.helpText}>{item.text}</Text>
                 </View>
               ))}
+              <View style={[styles.helpItem, { marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#e5e7eb' }]}>
+                <View style={[styles.helpDot, { backgroundColor: '#eab308' }]} />
+                <Text style={[styles.helpText, { fontSize: 12, color: '#6b7280' }]}>
+                  免责声明：本工具为趣味编码工具，采用 XOR 运算进行混淆，不适用于真正需要安全性的场景。如需保护敏感信息，请使用专业加密软件。
+                </Text>
+              </View>
             </View>
           </View>
 
