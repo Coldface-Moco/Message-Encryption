@@ -7,16 +7,21 @@ import { Label } from '@/components/ui/label';
 import { encrypt, decrypt } from '@/lib/encryption';
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix5`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix6`;
 
 const CHANGELOG_ITEMS = [
-  '输入框新增粘贴按钮：清除内容后显示，一键粘贴剪贴板内容',
+  '修复自定义字符和分隔符无法修改的问题',
+  '添加安全性免责声明：明确标注为趣味编码工具',
+  '自定义字符限制为可见ASCII字符，防止输入异常字符',
+  '修复RLE解码边界检查，防止损坏数据导致崩溃',
+  'LZW解压遇到无效编码时显示明确错误提示',
 ];
 
 const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
   {
     version: 'v1.1.2',
     items: [
+      '输入框新增粘贴按钮：清除内容后显示，一键粘贴剪贴板内容',
       '优化界面排版：自定义设置移至文本处理框下方，操作更便捷',
       '修复使用密钥加密/解密完全失败的问题',
       '密钥应用方式改为 XOR 运算，天然 32-bit 封闭无溢出',
