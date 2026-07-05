@@ -84,6 +84,7 @@ export default function App() {
       autoCheck();
     }, 2000);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const dismissChangelog = useCallback(async () => {
@@ -105,8 +106,8 @@ export default function App() {
       });
       setOutputText(result);
       setCompressionRatio(ratio);
-    } catch {
-      Alert.alert('加密失败', '请检查输入内容或自定义字符设置');
+    } catch (e) {
+      Alert.alert('加密失败', e instanceof Error ? e.message : '请检查输入内容或自定义字符设置');
     }
   }, [inputText, customChars, customSeparator, useKey, encryptionKey]);
 
@@ -124,16 +125,21 @@ export default function App() {
       });
       setOutputText(result);
       setCompressionRatio(null);
-    } catch {
-      Alert.alert('解密失败', '请确认密文格式正确，且密钥与加密时一致');
+    } catch (e) {
+      Alert.alert('解密失败', e instanceof Error ? e.message : '请确认密文格式正确，且密钥与加密时一致');
     }
   }, [inputText, customChars, customSeparator, useKey, encryptionKey]);
 
   const copyToClipboard = useCallback(async () => {
     if (!outputText) return;
-    await Clipboard.setStringAsync(outputText);
-    setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 2000);
+    try {
+      await Clipboard.setStringAsync(outputText);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('复制失败:', err);
+      Alert.alert('复制失败', '无法复制到剪贴板');
+    }
   }, [outputText]);
 
   const clearInputText = useCallback(() => {

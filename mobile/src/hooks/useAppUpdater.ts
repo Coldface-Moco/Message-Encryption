@@ -21,6 +21,38 @@ export function useAppUpdater(): AppUpdaterState {
   const [status, setStatus] = useState<UpdateStatus>('idle');
   const [progress, setProgress] = useState('');
 
+  /** 下载更新并提示重启（公共逻辑） */
+  const downloadAndInstall = useCallback(async () => {
+    try {
+      setStatus('downloading');
+      setProgress('正在下载更新…');
+      await Updates.fetchUpdateAsync();
+      setStatus('ready');
+      setProgress('');
+      Alert.alert(
+        '更新完成',
+        '新版本已下载完成，重启应用后生效。',
+        [
+          { text: '稍后重启', style: 'cancel', onPress: () => setStatus('idle') },
+          {
+            text: '立即重启',
+            onPress: async () => {
+              try {
+                await Updates.reloadAsync();
+              } catch {
+                Alert.alert('重启失败', '无法自动重启，请手动关闭并重新打开应用。');
+              }
+            },
+          },
+        ],
+      );
+    } catch {
+      setStatus('error');
+      setProgress('');
+      Alert.alert('下载失败', '更新下载失败，请检查网络后重试。');
+    }
+  }, []);
+
   const checkForUpdate = useCallback(async () => {
     if (!Updates.isEnabled) {
       Alert.alert('提示', '当前为开发模式，在线更新功能仅在正式包中生效。');
@@ -36,7 +68,9 @@ export function useAppUpdater(): AppUpdaterState {
       if (!result.isAvailable) {
         setStatus('latest');
         setProgress('');
-        Alert.alert('已是最新版本', '当前应用已是最新版本，无需更新。');
+        Alert.alert('已是最新版本', '当前应用已是最新版本，无需更新。', [
+          { text: '好的', onPress: () => setStatus('idle') },
+        ]);
         return;
       }
 
@@ -46,35 +80,7 @@ export function useAppUpdater(): AppUpdaterState {
         '检测到新版本可用，是否立即下载并更新？',
         [
           { text: '稍后再说', style: 'cancel', onPress: () => { setStatus('idle'); setProgress(''); } },
-          {
-            text: '立即更新',
-            onPress: async () => {
-              try {
-                setStatus('downloading');
-                setProgress('正在下载更新…');
-                await Updates.fetchUpdateAsync();
-                setStatus('ready');
-                setProgress('');
-                Alert.alert(
-                  '更新完成',
-                  '新版本已下载完成，重启应用后生效。',
-                  [
-                    { text: '稍后重启', style: 'cancel' },
-                    {
-                      text: '立即重启',
-                      onPress: async () => {
-                        await Updates.reloadAsync();
-                      },
-                    },
-                  ],
-                );
-              } catch {
-                setStatus('error');
-                setProgress('');
-                Alert.alert('下载失败', '更新下载失败，请检查网络后重试。');
-              }
-            },
-          },
+          { text: '立即更新', onPress: downloadAndInstall },
         ],
       );
     } catch {
@@ -82,7 +88,7 @@ export function useAppUpdater(): AppUpdaterState {
       setProgress('');
       Alert.alert('检查失败', '无法连接更新服务器，请检查网络后重试。');
     }
-  }, []);
+  }, [downloadAndInstall]);
 
   // 静默自动检查：失败不弹窗，有更新才提示
   const autoCheck = useCallback(async () => {
@@ -93,7 +99,7 @@ export function useAppUpdater(): AppUpdaterState {
       const result = await Updates.checkForUpdateAsync();
 
       if (!result.isAvailable) {
-        setStatus('latest');
+        setStatus('idle');
         return;
       }
 
@@ -101,43 +107,15 @@ export function useAppUpdater(): AppUpdaterState {
         '发现新版本',
         '检测到新版本可用，是否立即下载并更新？',
         [
-          { text: '稍后再说', style: 'cancel', onPress: () => { setStatus('idle'); } },
-          {
-            text: '立即更新',
-            onPress: async () => {
-              try {
-                setStatus('downloading');
-                setProgress('正在下载更新…');
-                await Updates.fetchUpdateAsync();
-                setStatus('ready');
-                setProgress('');
-                Alert.alert(
-                  '更新完成',
-                  '新版本已下载完成，重启应用后生效。',
-                  [
-                    { text: '稍后重启', style: 'cancel' },
-                    {
-                      text: '立即重启',
-                      onPress: async () => {
-                        await Updates.reloadAsync();
-                      },
-                    },
-                  ],
-                );
-              } catch {
-                setStatus('error');
-                setProgress('');
-                Alert.alert('下载失败', '更新下载失败，请检查网络后重试。');
-              }
-            },
-          },
+          { text: '稍后再说', style: 'cancel', onPress: () => setStatus('idle') },
+          { text: '立即更新', onPress: downloadAndInstall },
         ],
       );
     } catch {
       // 静默失败，不弹错误提示
       setStatus('idle');
     }
-  }, []);
+  }, [downloadAndInstall]);
 
   return { status, progress, checkForUpdate, autoCheck };
 }

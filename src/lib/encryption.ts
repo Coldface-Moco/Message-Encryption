@@ -194,4 +194,3 @@ export function decrypt(
   const plainCodes = rleDecode(rled);
   return plainCodes.map(c => String.fromCharCode(c)).join('');
 }
-
