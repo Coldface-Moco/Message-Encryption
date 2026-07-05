@@ -135,6 +135,10 @@ export function encrypt(
 
   const { customChars, customSeparator, useKey, key } = options;
 
+  if (customChars.length < 4) {
+    throw new Error('密文字符不能少于4个，请在自定义设置中添加更多字符');
+  }
+
   // 第一步：明文 charCode 数组
   const plainCodes: number[] = [];
   for (let i = 0; i < text.length; i++) plainCodes.push(text.charCodeAt(i));
@@ -179,6 +183,10 @@ export function decrypt(
   if (!text) return '';
 
   const { customChars, customSeparator, useKey, key } = options;
+
+  if (customChars.length < 4) {
+    throw new Error('密文字符不能少于4个，请在自定义设置中添加更多字符');
+  }
 
   // 第一步：解码自定义字符 → XOR 流
   const xored = strToCodes(text, customChars, customSeparator);

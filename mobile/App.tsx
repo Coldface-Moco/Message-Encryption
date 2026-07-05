@@ -38,9 +38,10 @@ import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix7`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix8`;
 
 const CHANGELOG_ITEMS = [
+  '密文字符最少需要4个，少于4个时提示错误并禁用加密解密',
   '修复自定义字符输入体验：支持退格键/删除键清空后直接输入',
   '修复自定义字符和分隔符无法修改的问题',
   '添加安全性免责声明：明确标注为趣味编码工具',
@@ -530,6 +531,9 @@ export default function App() {
                 <Text style={styles.settingsLabel}>
                   密文字符设置（当前使用 {customChars.length} 个字符）
                 </Text>
+                {customChars.length < 4 && (
+                  <Text style={styles.warningText}>⚠️ 密文字符不能少于4个，否则无法加密解密</Text>
+                )}
                 <View style={styles.charGrid}>
                   {customChars.map((char, index) => (
                     <View key={index} style={styles.charInputWrap}>
@@ -757,6 +761,11 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     marginBottom: 4,
     textAlign: 'center',
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginBottom: 8,
   },
   charInput: {
     borderWidth: 1,
