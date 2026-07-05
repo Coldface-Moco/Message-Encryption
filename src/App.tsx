@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { encrypt, decrypt } from '@/lib/encryption';
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix6`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix7`;
 
 const CHANGELOG_ITEMS = [
+  '修复自定义字符输入体验：支持退格键/删除键清空后直接输入',
   '修复自定义字符和分隔符无法修改的问题',
   '添加安全性免责声明：明确标注为趣味编码工具',
   '自定义字符限制为可见ASCII字符，防止输入异常字符',
@@ -137,8 +138,14 @@ function App() {
 
   // 更新自定义字符（拒绝重复字符 & 与分隔符冲突，保证 base 编码双射性）
   const updateCustomChar = (index: number, value: string) => {
-    const ch = value.slice(0, 1);
-    if (!ch) return;
+    if (value === '') {
+      // 允许清空
+      const newChars = [...customChars];
+      newChars[index] = '';
+      setCustomChars(newChars);
+      return;
+    }
+    const ch = value.slice(-1); // 取最后一个字符
     if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
     if (customChars.some((c, i) => i !== index && c === ch)) return; // 字符间重复
     if (ch === customSeparator) return; // 与分隔符冲突
@@ -149,8 +156,11 @@ function App() {
 
   // 更新分隔符（拒绝与自定义字符冲突）
   const updateSeparator = (value: string) => {
-    const ch = value.slice(0, 1);
-    if (!ch) return;
+    if (value === '') {
+      setCustomSeparator('');
+      return;
+    }
+    const ch = value.slice(-1); // 取最后一个字符
     if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
     if (customChars.includes(ch)) return; // 与自定义字符冲突
     setCustomSeparator(ch);

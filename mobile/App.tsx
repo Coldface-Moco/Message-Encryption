@@ -38,9 +38,10 @@ import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
 const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix6`;
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix7`;
 
 const CHANGELOG_ITEMS = [
+  '修复自定义字符输入体验：支持退格键/删除键清空后直接输入',
   '修复自定义字符和分隔符无法修改的问题',
   '添加安全性免责声明：明确标注为趣味编码工具',
   '自定义字符限制为可见ASCII字符，防止输入异常字符',
@@ -168,8 +169,16 @@ export default function App() {
   }, []);
 
   const updateCustomChar = useCallback((index: number, value: string) => {
-    const ch = value.slice(-1); // 取最后一个字符，支持清空后重新输入
-    if (!ch) return;
+    if (value === '') {
+      // 允许清空，暂时设为空字符串
+      setCustomChars((prev) => {
+        const newChars = [...prev];
+        newChars[index] = '';
+        return newChars;
+      });
+      return;
+    }
+    const ch = value.slice(-1); // 取最后一个字符
     if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
     setCustomChars((prev) => {
       // 若其他位置已有该字符或与分隔符冲突，则忽略本次更新
@@ -541,8 +550,11 @@ export default function App() {
                   style={styles.separatorInput}
                   value={customSeparator}
                   onChangeText={(v) => {
-                    const ch = v.slice(-1); // 取最后一个字符，支持清空后重新输入
-                    if (!ch) return;
+                    if (v === '') {
+                      setCustomSeparator('');
+                      return;
+                    }
+                    const ch = v.slice(-1); // 取最后一个字符
                     if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
                     // 分隔符不能与自定义字符重复
                     if (customChars.includes(ch)) return;
