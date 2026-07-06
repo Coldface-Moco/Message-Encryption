@@ -6,18 +6,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { encrypt, decrypt } from '@/lib/encryption';
 
-const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix9`;
+const CHANGELOG_VERSION = 'v1.1.3';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
 
 const CHANGELOG_ITEMS = [
-  '修复密文字符校验：正确计算有效字符数量（忽略空字符）',
-  '密文字符最少需要4个，少于4个时提示错误并禁用加密解密',
-  '修复自定义字符输入体验：支持退格键/删除键清空后直接输入',
-  '修复自定义字符和分隔符无法修改的问题',
-  '添加安全性免责声明：明确标注为趣味编码工具',
-  '自定义字符限制为可见ASCII字符，防止输入异常字符',
-  '修复RLE解码边界检查，防止损坏数据导致崩溃',
-  'LZW解压遇到无效编码时显示明确错误提示',
+  '优化分隔符输入体验：支持退格键/删除键清空，清空时显示提示',
+  '分隔符操作逻辑与密文字符设置保持一致',
+  '禁止分隔符为空，防止加密解密失败',
 ];
 
 const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
@@ -156,9 +151,13 @@ function App() {
     setCustomChars(newChars);
   };
 
-  // 更新分隔符（拒绝与自定义字符冲突，不允许为空）
+  // 更新分隔符（拒绝与自定义字符冲突）
   const updateSeparator = (value: string) => {
-    if (value === '') return; // 分隔符不能为空
+    if (value === '') {
+      // 允许清空，但提示用户
+      setCustomSeparator('');
+      return;
+    }
     const ch = value.slice(-1); // 取最后一个字符
     if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
     if (customChars.includes(ch)) return; // 与自定义字符冲突
@@ -353,14 +352,14 @@ function App() {
             <div className="flex justify-center space-x-4">
               <Button
                 onClick={handleEncrypt}
-                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4}
+                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4 || customSeparator === ''}
                 className="px-8 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white transition-all duration-300"
               >
                 加密
               </Button>
               <Button
                 onClick={handleDecrypt}
-                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4}
+                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4 || customSeparator === ''}
                 className="px-8 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white transition-all duration-300"
               >
                 解密
@@ -474,6 +473,9 @@ function App() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
                     placeholder="分隔符"
                   />
+                  {customSeparator === '' && (
+                    <p className="text-sm text-red-500 mt-1">分隔符不能为空，请输入一个字符</p>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center pt-4">

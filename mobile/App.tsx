@@ -37,18 +37,13 @@ import { encrypt, decrypt } from './src/utils/encryption';
 import { useAppUpdater } from './src/hooks/useAppUpdater';
 import * as Updates from 'expo-updates';
 
-const CHANGELOG_VERSION = 'v1.1.2';
-const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix9`;
+const CHANGELOG_VERSION = 'v1.1.3';
+const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
 
 const CHANGELOG_ITEMS = [
-  '修复密文字符校验：正确计算有效字符数量（忽略空字符）',
-  '密文字符最少需要4个，少于4个时提示错误并禁用加密解密',
-  '修复自定义字符输入体验：支持退格键/删除键清空后直接输入',
-  '修复自定义字符和分隔符无法修改的问题',
-  '添加安全性免责声明：明确标注为趣味编码工具',
-  '自定义字符限制为可见ASCII字符，防止输入异常字符',
-  '修复RLE解码边界检查，防止损坏数据导致崩溃',
-  'LZW解压遇到无效编码时显示明确错误提示',
+  '优化分隔符输入体验：支持退格键/删除键清空，清空时显示提示',
+  '分隔符操作逻辑与密文字符设置保持一致',
+  '禁止分隔符为空，防止加密解密失败',
 ];
 
 const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
@@ -441,11 +436,11 @@ export default function App() {
                 style={[
                   styles.actionBtn,
                   styles.encryptBtn,
-                  (!inputText || (useKey && !encryptionKey.trim())) &&
+                  (!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4 || customSeparator === '') &&
                     styles.disabledBtn,
                 ]}
                 onPress={handleEncrypt}
-                disabled={!inputText || (useKey && !encryptionKey.trim())}
+                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4 || customSeparator === ''}
               >
                 <Text style={styles.actionBtnText}>加密</Text>
               </TouchableOpacity>
@@ -453,11 +448,11 @@ export default function App() {
                 style={[
                   styles.actionBtn,
                   styles.decryptBtn,
-                  (!inputText || (useKey && !encryptionKey.trim())) &&
+                  (!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4 || customSeparator === '') &&
                     styles.disabledBtn,
                 ]}
                 onPress={handleDecrypt}
-                disabled={!inputText || (useKey && !encryptionKey.trim())}
+                disabled={!inputText || (useKey && !encryptionKey.trim()) || customChars.filter(c => c.length > 0).length < 4 || customSeparator === ''}
               >
                 <Text style={styles.actionBtnText}>解密</Text>
               </TouchableOpacity>
@@ -555,7 +550,10 @@ export default function App() {
                   style={styles.separatorInput}
                   value={customSeparator}
                   onChangeText={(v) => {
-                    if (v === '') return; // 分隔符不能为空
+                    if (v === '') {
+                      setCustomSeparator('');
+                      return;
+                    }
                     const ch = v.slice(-1); // 取最后一个字符
                     if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
                     // 分隔符不能与自定义字符重复
@@ -565,6 +563,9 @@ export default function App() {
                   maxLength={1}
                   textAlign="center"
                 />
+                {customSeparator === '' && (
+                  <Text style={styles.warningText}>分隔符不能为空，请输入一个字符</Text>
+                )}
 
                 <View style={styles.settingsFooter}>
                   <Text style={styles.previewText}>
