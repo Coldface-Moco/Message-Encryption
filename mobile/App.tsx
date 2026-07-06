@@ -555,10 +555,7 @@ export default function App() {
                   style={styles.separatorInput}
                   value={customSeparator}
                   onChangeText={(v) => {
-                    if (v === '') {
-                      setCustomSeparator('');
-                      return;
-                    }
+                    if (v === '') return; // 分隔符不能为空
                     const ch = v.slice(-1); // 取最后一个字符
                     if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
                     // 分隔符不能与自定义字符重复

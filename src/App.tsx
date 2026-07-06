@@ -156,12 +156,9 @@ function App() {
     setCustomChars(newChars);
   };
 
-  // 更新分隔符（拒绝与自定义字符冲突）
+  // 更新分隔符（拒绝与自定义字符冲突，不允许为空）
   const updateSeparator = (value: string) => {
-    if (value === '') {
-      setCustomSeparator('');
-      return;
-    }
+    if (value === '') return; // 分隔符不能为空
     const ch = value.slice(-1); // 取最后一个字符
     if (ch.charCodeAt(0) < 0x21 || ch.charCodeAt(0) > 0x7e) return; // 仅允许可见 ASCII 字符
     if (customChars.includes(ch)) return; // 与自定义字符冲突
