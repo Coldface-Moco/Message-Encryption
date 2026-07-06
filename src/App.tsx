@@ -6,13 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { encrypt, decrypt } from '@/lib/encryption';
 
-const CHANGELOG_VERSION = 'v1.1.3';
+const CHANGELOG_VERSION = 'v1.1.4';
 const CHANGELOG_KEY = `changelog_seen_${CHANGELOG_VERSION}_fix1`;
 
 const CHANGELOG_ITEMS = [
-  '优化分隔符输入体验：支持退格键/删除键清空，清空时显示提示',
-  '分隔符操作逻辑与密文字符设置保持一致',
-  '禁止分隔符为空，防止加密解密失败',
+  '测试版本号',
 ];
 
 const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
