@@ -545,7 +545,7 @@ function App() {
         {/* 页脚 */}
         <div className="text-center py-6">
           <p className="text-sm text-gray-500">
-            {"@2026 Build V1.1.2 版权所有"}
+            {"@2026 Build " + CHANGELOG_VERSION + " 版权所有"}
             <span className="mx-2">·</span>
             {"访问量" + String(visitCount).padStart(5, '0') + "次"}
           </p>
