@@ -15,6 +15,14 @@ const CHANGELOG_ITEMS = [
 
 const CHANGELOG_PREVIOUS: { version: string; items: string[] }[] = [
   {
+    version: 'v1.1.3',
+    items: [
+      '优化分隔符输入体验：支持退格键/删除键清空，清空时显示提示',
+      '分隔符操作逻辑与密文字符设置保持一致',
+      '禁止分隔符为空，防止加密解密失败',
+    ],
+  },
+  {
     version: 'v1.1.2',
     items: [
       '输入框新增粘贴按钮：清除内容后显示，一键粘贴剪贴板内容',
